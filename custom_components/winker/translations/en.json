@@ -1,0 +1,29 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Winker (Beelive)",
+        "description": "Entre com o mesmo e-mail e senha do app.",
+        "data": {
+          "username": "E-mail",
+          "password": "Senha"
+        }
+      },
+      "portal": {
+        "title": "Condomínio",
+        "description": "Escolha o condomínio.",
+        "data": {
+          "id_portal": "Condomínio"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "E-mail ou senha incorretos.",
+      "cannot_connect": "Não foi possível conectar à API da Winker.",
+      "no_portals": "Nenhum condomínio encontrado nesta conta."
+    },
+    "abort": {
+      "already_configured": "Este condomínio já está configurado."
+    }
+  }
+}
