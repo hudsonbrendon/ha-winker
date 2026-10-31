@@ -18,7 +18,13 @@ import logging
 
 from aiohttp import ClientSession
 
-from .const import APP_KEY, APP_VERSION, BASE_URL
+from .const import (
+    APP_KEY,
+    APP_VERSION,
+    BASE_URL,
+    CONSUMPTION_BEARER,
+    CONSUMPTION_URL,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -112,6 +118,20 @@ class WinkerClient:
     async def get_packages_todeliver(self, id_portal: int) -> list[dict]:
         data = await self._get(f"package/todeliver?id_portal={id_portal}")
         return data if isinstance(data, list) else []
+
+    async def get_consumption(self, id_portal: int) -> list[dict]:
+        """Leituras de água/gás (API separada, Bearer fixo). [] se não houver."""
+        async with self._session.get(
+            f"{CONSUMPTION_URL}/consumption/list?id_portal={id_portal}",
+            headers={"Accept": "application/json", "Authorization": CONSUMPTION_BEARER},
+        ) as resp:
+            if resp.status != 200:
+                return []
+            data = await _safe_json(resp)
+        if isinstance(data, dict) and data.get("success"):
+            ret = data.get("return")
+            return ret if isinstance(ret, list) else []
+        return []
 
 
 async def _safe_json(resp):

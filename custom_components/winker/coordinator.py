@@ -35,6 +35,7 @@ class WinkerCoordinator(DataUpdateCoordinator):
             messages = await self._client.get_messages(self._id_portal)
             booking_count = await self._client.get_booking_count(self._id_portal)
             packages = await self._client.get_packages_todeliver(self._id_portal)
+            consumption = await self._client.get_consumption(self._id_portal)
         except WinkerApiError as err:
             raise UpdateFailed(str(err)) from err
 
@@ -45,4 +46,5 @@ class WinkerCoordinator(DataUpdateCoordinator):
             "messages": messages,
             "booking_count": booking_count,
             "packages": packages,
+            "consumption": consumption,
         }

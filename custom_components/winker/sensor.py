@@ -28,6 +28,7 @@ async def async_setup_entry(
             AvisosSensor(coordinator, entry, name, id_portal),
             ReservasSensor(coordinator, entry, name, id_portal),
             EncomendasSensor(coordinator, entry, name, id_portal),
+            ConsumoSensor(coordinator, entry, name, id_portal),
         ]
     )
 
@@ -148,3 +149,20 @@ class EncomendasSensor(_Base):
     @property
     def native_value(self) -> int:
         return len(self.coordinator.data["packages"])
+
+
+class ConsumoSensor(_Base):
+    """Leituras de água/gás. Fica 0 se a medição não estiver ativa no condomínio."""
+
+    _attr_icon = "mdi:water-meter"
+
+    def __init__(self, c, e, pn, p) -> None:
+        super().__init__(c, e, pn, p, "consumo", "Leituras de consumo")
+
+    @property
+    def native_value(self) -> int:
+        return len(self.coordinator.data.get("consumption", []))
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return {"leituras": self.coordinator.data.get("consumption", [])[:12]}
