@@ -119,6 +119,39 @@ class WinkerClient:
         data = await self._get(f"package/todeliver?id_portal={id_portal}")
         return data if isinstance(data, list) else []
 
+    async def get_me(self) -> dict:
+        """Perfil completo do usuário (nome, veículos, pets, telefones, documentos)."""
+        data = await self._get("me")
+        return data if isinstance(data, dict) else {}
+
+    async def get_my_units(self, id_portal: int) -> list[dict]:
+        data = await self._get(f"me/unit?responsibles=true&id_portal={id_portal}")
+        return data if isinstance(data, list) else []
+
+    async def get_maintenance(self, id_portal: int) -> list[dict]:
+        data = await self._get(f"maintenance?id_portal={id_portal}")
+        return data if isinstance(data, list) else []
+
+    async def get_meetings(self, id_portal: int) -> list[dict]:
+        data = await self._get(f"meeting?id_portal={id_portal}")
+        return data if isinstance(data, list) else []
+
+    async def get_document_types(self, id_portal: int) -> list[dict]:
+        """Categorias de documentos do condomínio, com contagem (count_documents)."""
+        data = await self._get(f"document-type?id_portal={id_portal}")
+        return data if isinstance(data, list) else []
+
+    async def get_booking_resources(self, id_portal: int) -> list[dict]:
+        """Espaços reserváveis (churrasqueira, salão, quadra...)."""
+        data = await self._get(f"booking?id_portal={id_portal}")
+        return data if isinstance(data, list) else []
+
+    async def get_keys_withdrawn(self, id_portal: int) -> list[dict]:
+        data = await self._get(f"key/withdrawn?id_portal={id_portal}")
+        if isinstance(data, dict):
+            return data.get("items") or []
+        return []
+
     async def get_consumption(self, id_portal: int) -> list[dict]:
         """Leituras de água/gás (API separada, Bearer fixo). [] se não houver."""
         async with self._session.get(

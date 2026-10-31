@@ -30,21 +30,36 @@ class WinkerCoordinator(DataUpdateCoordinator):
         self._id_portal = id_portal
 
     async def _async_update_data(self) -> dict:
+        p = self._id_portal
+
+        async def safe(coro, default):
+            """Um endpoint que falhe não zera os demais sensores."""
+            try:
+                return await coro
+            except WinkerApiError as err:
+                _LOGGER.debug("Winker endpoint falhou: %s", err)
+                return default
+
+        # 'me' é a sonda de sessão: se cair aqui, a atualização toda falha (re-login).
         try:
-            billings = await self._client.get_billings(self._id_portal)
-            messages = await self._client.get_messages(self._id_portal)
-            booking_count = await self._client.get_booking_count(self._id_portal)
-            packages = await self._client.get_packages_todeliver(self._id_portal)
-            consumption = await self._client.get_consumption(self._id_portal)
+            me = await self._client.get_me()
         except WinkerApiError as err:
             raise UpdateFailed(str(err)) from err
 
-        opened = [b for b in billings if b.get("situation") == "opened"]
-        return {
+        billings = await safe(self._client.get_billings(p), [])
+        data = {
+            "me": me,
+            "units": await safe(self._client.get_my_units(p), []),
             "billings": billings,
-            "billings_opened": opened,
-            "messages": messages,
-            "booking_count": booking_count,
-            "packages": packages,
-            "consumption": consumption,
+            "billings_opened": [b for b in billings if b.get("situation") == "opened"],
+            "messages": await safe(self._client.get_messages(p), []),
+            "booking_count": await safe(self._client.get_booking_count(p), 0),
+            "booking_resources": await safe(self._client.get_booking_resources(p), []),
+            "packages": await safe(self._client.get_packages_todeliver(p), []),
+            "maintenance": await safe(self._client.get_maintenance(p), []),
+            "meetings": await safe(self._client.get_meetings(p), []),
+            "document_types": await safe(self._client.get_document_types(p), []),
+            "keys_withdrawn": await safe(self._client.get_keys_withdrawn(p), []),
+            "consumption": await safe(self._client.get_consumption(p), []),
         }
+        return data
