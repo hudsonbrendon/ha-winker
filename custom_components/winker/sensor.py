@@ -201,8 +201,11 @@ class ManutencoesSensor(_Base):
     def extra_state_attributes(self) -> dict:
         itens = self.coordinator.data.get("maintenance", [])
         datas = [d for d in (_parse_dt(m.get("next_notification")) for m in itens) if d]
+        agora = datetime.now().astimezone()
+        futuras = [d for d in datas if d >= agora]
         return {
-            "proxima": min(datas).isoformat() if datas else None,
+            "proxima": min(futuras).isoformat() if futuras else None,
+            "atrasadas": len(datas) - len(futuras),
             "itens": [
                 {"nome": (m.get("name") or "").strip(), "proxima": m.get("next_notification")}
                 for m in itens
